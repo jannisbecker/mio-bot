@@ -187,9 +187,9 @@ lazy_static! {
 #[example("27°C °F")]
 pub async fn convert(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     if args.len() != 2 {
-        return Err(
-           CommandError::from("Invalid number of arguments. You need to pass <number><unit> and <desired unit>, e.g. $convert 25km/s ft/s"),
-        );
+        return 
+           Err(CommandError::from("Invalid number of arguments. You need to pass <number><unit> and <desired unit>, e.g. convert 25km/s ft/s"))
+        
     }
 
     let source_arg = args.single::<String>().unwrap();

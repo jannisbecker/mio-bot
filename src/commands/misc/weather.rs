@@ -7,7 +7,7 @@ use serenity::{
 };
 use std::env;
 
-use crate::core::consts::MAIN_COLOR;
+use crate::core::constants::MAIN_COLOR;
 
 // static MAP_ZOOM: i32 = 5;
 

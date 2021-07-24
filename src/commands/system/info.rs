@@ -3,7 +3,7 @@ use rustc_version_runtime::version;
 use sysinfo::{ProcessExt, ProcessorExt, SystemExt};
 
 use crate::core::{
-    consts::MAIN_COLOR,
+    constants::MAIN_COLOR,
     context::{StartTimeContainer, SysInfoContainer},
 };
 

@@ -1,4 +1,4 @@
 pub mod checks;
-pub mod consts;
+pub mod constants;
 pub mod context;
 //pub mod pagination;

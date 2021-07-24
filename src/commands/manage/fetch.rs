@@ -1,4 +1,4 @@
-use crate::core::consts::MAIN_COLOR;
+use crate::core::constants::MAIN_COLOR;
 use log::debug;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},

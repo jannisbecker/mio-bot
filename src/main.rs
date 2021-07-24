@@ -1,7 +1,7 @@
 mod commands;
 mod core;
 
-use crate::core::consts::MAIN_COLOR;
+use crate::core::constants::MAIN_COLOR;
 use crate::core::context::*;
 use chrono::Utc;
 use log::info;

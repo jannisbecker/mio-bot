@@ -1,4 +1,4 @@
-use crate::core::consts::MAIN_COLOR;
+use crate::core::constants::MAIN_COLOR;
 use serenity::{
     framework::standard::{macros::command, Args, CommandError, CommandResult},
     model::channel::Message,

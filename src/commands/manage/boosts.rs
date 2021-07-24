@@ -7,7 +7,7 @@ use serenity::{
     prelude::Context,
 };
 
-use crate::core::consts::MAIN_COLOR;
+use crate::core::constants::MAIN_COLOR;
 
 #[command]
 pub async fn list_boosts(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
