@@ -1,6 +1,5 @@
+use crate::core::checks::ISNSFW_CHECK;
 use lazy_static::lazy_static;
-
-use crate::core::{checks::ISNSFW_CHECK, consts::MAIN_COLOR};
 use regex::{Captures, Regex};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;

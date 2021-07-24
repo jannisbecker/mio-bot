@@ -8,7 +8,7 @@ use serenity::{
 use reqwest::{get, StatusCode};
 
 #[command]
-pub async fn lookup(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+pub async fn tldr(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let platform_arg;
 
     // If the platform was given as the first argument, try to parse it, otherwise go back to linux
