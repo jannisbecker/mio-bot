@@ -1,3 +1,4 @@
+use crate::core::{checks::IS_MOD_CHECK, constants::MAIN_COLOR};
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::Deserialize;
@@ -13,7 +14,7 @@ lazy_static! {
 }
 
 #[command]
-#[min_args(1)]
+#[checks("is_mod")]
 pub async fn add_server(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let _ = msg.delete(&ctx).await;
 
@@ -40,15 +41,17 @@ pub async fn add_server(ctx: &Context, msg: &Message, args: Args) -> CommandResu
         .channel_id
         .send_message(&ctx.http, |m| {
             m.embed(|e| {
-                e.title(&server_info.guild.name).description(format!(
-                    "{}\n\
+                e.color(MAIN_COLOR)
+                    .title(&server_info.guild.name)
+                    .description(format!(
+                        "{}\n\
                         https://discord.gg/{}\n\n\
                         **{}** Members, **{}** Online",
-                    &server_info.guild.description.clone().unwrap_or_default(),
-                    invite_id,
-                    &server_info.approximate_member_count,
-                    &server_info.approximate_presence_count,
-                ));
+                        &server_info.guild.description.clone().unwrap_or_default(),
+                        invite_id,
+                        &server_info.approximate_member_count,
+                        &server_info.approximate_presence_count,
+                    ));
 
                 if let Some(icon_url) = &server_info.guild.icon {
                     e.thumbnail(format!(

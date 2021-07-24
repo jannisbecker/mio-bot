@@ -1,4 +1,4 @@
-use crate::core::checks::IS_NSFW_CHECK;
+use crate::core::{checks::IS_NSFW_CHECK, constants::MAIN_COLOR};
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use serde::Deserialize;
@@ -39,7 +39,7 @@ pub async fn nhentai(ctx: &Context, msg: &Message, args: Args) -> CommandResult 
             .channel_id
             .send_message(&ctx.http, |m| {
                 let msg = m.embed(|e| {
-                    e.color(0xEC2854)
+                    e.color(MAIN_COLOR)
                         .title(data.title.pretty)
                         .url(format!("https://nhentai.net/g/{}", data.id))
                         .thumbnail(get_cover_url(&data.media_id, &data.images.cover.t))

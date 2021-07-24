@@ -1,4 +1,4 @@
-use crate::core::constants::MAIN_COLOR;
+use crate::core::{checks::IS_MOD_CHECK, constants::MAIN_COLOR};
 use log::debug;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
@@ -13,6 +13,7 @@ const MESSAGE_RELATIVE_AGE_THRESH: i64 = 3600 * 18;
 const MESSAGE_NO_IMAGES_FOUND_THRESH: u64 = 50;
 
 #[command]
+#[checks("is_mod")]
 #[description("Generate a list of all the images recently posted. It will try to intelligently guess where the image posting stopped, but you can also define a clear start and/or end point")]
 #[usage("<optional starting Message ID> <optional ending message ID>")]
 #[example("725681148134424596")]

@@ -110,7 +110,7 @@ pub async fn weather(ctx: &Context, msg: &Message, mut args: Args) -> CommandRes
                                 format_timestamp(
                                     weather.current.dt,
                                     weather.timezone_offset,
-                                    "%H:%M, %e %b %Y"
+                                    "%H:%M, %b %e %Y"
                                 ),
                             ),
                             false,

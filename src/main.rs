@@ -1,7 +1,7 @@
 mod commands;
 mod core;
 
-use crate::core::constants::MAIN_COLOR;
+use crate::core::constants::ERROR_COLOR;
 use crate::core::context::*;
 use chrono::Utc;
 use log::info;
@@ -104,17 +104,10 @@ async fn after(ctx: &Context, msg: &Message, command_name: &str, command_result:
                 command_name, msg.content, error
             );
 
-            let _ = msg.channel_id
+            let _ = msg
+                .channel_id
                 .send_message(&ctx.http, |m| {
-                    m.embed(|e| {
-                        e.colour(MAIN_COLOR)
-                            .title("Oh noes!")
-                            .description(
-                                "Unfortunately, an error has occured while processing this command. \n\
-                                Please report this incident to the bot owner to get it fixed.
-                            ")
-                            .field("Error", error, false)
-                    })
+                    m.embed(|e| e.colour(ERROR_COLOR).title("Oh noes!").description(error))
                 })
                 .await;
         }

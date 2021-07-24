@@ -24,7 +24,8 @@ pub async fn translate(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
         Some(lang) => lang,
         None => {
             return Err(CommandError::from(
-                "The first argument must be a valid two letter language code!",
+                "The first argument must be a valid two letter language code!\n\
+                Here's a list of them: https://cloud.google.com/translate/docs/languages",
             ))
         }
     };
