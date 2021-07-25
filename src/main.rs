@@ -25,8 +25,11 @@ impl EventHandler for Handler {
         use serenity::model::gateway::Activity;
         use serenity::model::user::OnlineStatus;
 
-        ctx.set_presence(Some(Activity::listening("~help")), OnlineStatus::Online)
-            .await
+        ctx.set_presence(
+            Some(Activity::listening("~help, aoyama help")),
+            OnlineStatus::Online,
+        )
+        .await
     }
 
     async fn resume(&self, _: Context, _: ResumedEvent) {
@@ -42,34 +45,34 @@ async fn main() {
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
     let http = Http::new_with_token(&token);
 
-    let (owners, bot_id) = match http.get_current_application_info().await {
-        Ok(info) => {
-            let mut owners = HashSet::new();
-
-            if let Some(team) = info.team {
-                owners.insert(team.owner_user_id);
-            } else {
-                owners.insert(info.owner.id);
-            }
-
-            match http.get_current_user().await {
-                Ok(bot_id) => (owners, bot_id.id),
-                Err(why) => panic!("Could not access the bot id: {:?}", why),
-            }
-        }
+    let app_info = match http.get_current_application_info().await {
+        Ok(info) => info,
         Err(why) => panic!("Could not access application info: {:?}", why),
     };
 
+    let bot_user = match http.get_current_user().await {
+        Ok(user) => user,
+        Err(why) => panic!("Could not access the bot id: {:?}", why),
+    };
+
+    let mut owners = HashSet::new();
+    if let Some(team) = &app_info.team {
+        owners.insert(team.owner_user_id);
+    } else {
+        owners.insert(app_info.owner.id);
+    }
+
     let framework = StandardFramework::new()
         .configure(|c| {
-            c.on_mention(Some(bot_id))
-                .prefixes(vec!["~"])
+            c.on_mention(Some(bot_user.id))
+                .prefixes(vec!["~", "aoyama "])
                 .owners(owners)
         })
         .after(after)
-        .group(&commands::misc::MISC_GROUP)
+        .group(&commands::web::WEB_GROUP)
+        .group(&commands::fun::FUN_GROUP)
         .group(&commands::system::SYSTEM_GROUP)
-        .group(&commands::manage::MANAGE_GROUP)
+        .group(&commands::moderation::MODERATION_GROUP)
         .group(&commands::nsfw::NSFW_GROUP)
         .help(&commands::help::HELP);
 
@@ -84,6 +87,8 @@ async fn main() {
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
         data.insert::<StartTimeContainer>(Utc::now());
         data.insert::<SysInfoContainer>(System::new_all());
+        data.insert::<AppInfoContainer>(app_info);
+        data.insert::<BotUserContainer>(bot_user);
     }
 
     if let Err(why) = client.start().await {

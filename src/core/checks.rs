@@ -5,7 +5,7 @@ use serenity::{
 };
 
 #[check]
-#[name = "is_nsfw"]
+#[name = "NSFW"]
 async fn nsfw_check(
     ctx: &Context,
     msg: &Message,
@@ -21,7 +21,7 @@ async fn nsfw_check(
 }
 
 #[check]
-#[name = "is_admin"]
+#[name = "Admin"]
 async fn admin_check(
     ctx: &Context,
     msg: &Message,
@@ -43,20 +43,25 @@ async fn admin_check(
 }
 
 #[check]
-#[name = "is_mod"]
+#[name = "Moderator"]
 async fn mod_check(
     ctx: &Context,
     msg: &Message,
-    _: &mut Args,
-    _: &CommandOptions,
+    args: &mut Args,
+    options: &CommandOptions,
 ) -> Result<(), Reason> {
     let member = msg.member(&ctx).await.expect("can't get member");
-    let perms = member
-        .permissions(&ctx)
-        .await
-        .expect("can't get permissions");
+    let roles = member.roles(&ctx).await.expect("can't get roles");
 
-    match perms.manage_roles() {
+    if admin_check(ctx, msg, args, options).await.is_ok() {
+        return Ok(());
+    }
+
+    // todo: allow admins to set a mod role, store it in a database, and check against that
+    match roles
+        .iter()
+        .any(|role| role.id.to_string() == "134040353517862912")
+    {
         true => Ok(()),
         false => Err(Reason::User(
             "This command can only be run as a moderator".to_string(),

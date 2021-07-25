@@ -1,4 +1,4 @@
-use crate::core::{checks::IS_MOD_CHECK, constants::MAIN_COLOR};
+use crate::core::constants::MAIN_COLOR;
 use chrono::{DateTime, Utc};
 use serenity::futures::StreamExt;
 use serenity::model::guild::Member;
@@ -9,8 +9,11 @@ use serenity::{
 };
 
 #[command]
-#[checks("is_mod")]
-pub async fn list_boosts(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+#[description(
+    "Lists all members that are currently boosting the server \n\
+    as well as the starting date of their boosting."
+)]
+pub async fn boosts(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let mut boosting_members: Vec<(Member, DateTime<Utc>)> = Vec::new();
 
     let mut guild_members = msg.guild_id.unwrap().members_iter(&ctx).boxed();

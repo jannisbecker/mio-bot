@@ -1,4 +1,4 @@
-use crate::core::{checks::IS_MOD_CHECK, constants::MAIN_COLOR};
+use crate::core::constants::MAIN_COLOR;
 use log::debug;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
@@ -13,9 +13,9 @@ const MESSAGE_RELATIVE_AGE_THRESH: i64 = 3600 * 18;
 const MESSAGE_NO_IMAGES_FOUND_THRESH: u64 = 50;
 
 #[command]
-#[checks("is_mod")]
-#[description("Generate a list of all the images recently posted. It will try to intelligently guess where the image posting stopped, but you can also define a clear start and/or end point")]
-#[usage("<optional starting Message ID> <optional ending message ID>")]
+#[description("Generate a list of all the images recently posted. It will try to intelligently guess where the image posting started, but you can also define a clear start and/or end point")]
+#[usage("<starting Message> <ending message>")]
+#[example("")]
 #[example("725681148134424596")]
 #[example("725681148134424596 725681148134424582")]
 pub async fn fetch(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
@@ -45,7 +45,7 @@ pub async fn fetch(ctx: &Context, msg: &Message, mut args: Args) -> CommandResul
         let _ = msg.channel_id.broadcast_typing(&ctx.http);
 
         // Fetch REQUESTS_PER_ITER messages to process
-        let _messages: Vec<Message> = msg
+        let messages: Vec<Message> = msg
             .channel_id
             .messages(&ctx.http, |retriever| {
                 retriever.before(last_message_id).limit(REQUESTS_PER_ITER)
@@ -56,12 +56,12 @@ pub async fn fetch(ctx: &Context, msg: &Message, mut args: Args) -> CommandResul
 
         // If the retrieved messages are less than what expected (usually means we reached the beginning of the history)
         // or we reached a max amount of requests to make, stop after this iteration
-        if _messages.len() < REQUESTS_PER_ITER as usize {
+        if messages.len() < REQUESTS_PER_ITER as usize {
             end_reached = true;
         }
 
         // Go through all fetched messages in this iteration
-        for message in _messages {
+        for message in messages {
             debug!("Processing message {}", message.id.0);
 
             current_message_timestamp = message.timestamp.timestamp();

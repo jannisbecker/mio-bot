@@ -1,5 +1,6 @@
+pub mod fun;
 pub mod help;
-pub mod manage;
-pub mod misc;
+pub mod moderation;
 pub mod nsfw;
 pub mod system;
+pub mod web;

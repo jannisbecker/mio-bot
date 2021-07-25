@@ -1,4 +1,8 @@
-use serenity::{client::bridge::gateway::ShardManager, prelude::*};
+use serenity::{
+    client::bridge::gateway::ShardManager,
+    model::prelude::{CurrentApplicationInfo, CurrentUser},
+    prelude::*,
+};
 use std::sync::Arc;
 
 extern crate chrono;
@@ -18,4 +22,14 @@ impl TypeMapKey for StartTimeContainer {
 pub struct SysInfoContainer;
 impl TypeMapKey for SysInfoContainer {
     type Value = System;
+}
+
+pub struct AppInfoContainer;
+impl TypeMapKey for AppInfoContainer {
+    type Value = CurrentApplicationInfo;
+}
+
+pub struct BotUserContainer;
+impl TypeMapKey for BotUserContainer {
+    type Value = CurrentUser;
 }

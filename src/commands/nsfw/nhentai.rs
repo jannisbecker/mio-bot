@@ -1,4 +1,4 @@
-use crate::core::{checks::IS_NSFW_CHECK, constants::MAIN_COLOR};
+use crate::core::{checks::NSFW_CHECK, constants::MAIN_COLOR};
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use serde::Deserialize;
@@ -15,11 +15,11 @@ lazy_static! {
 }
 
 #[command]
+#[checks(NSFW)]
 #[aliases("nh")]
 #[description(
     "Looks up one or multiple nhentai IDs and returns information about the associated doujinshi."
 )]
-#[checks("is_nsfw")]
 pub async fn nhentai(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let ids_raw = args.message();
     let id_captures: Vec<Captures> = ID_REGEX.captures_iter(ids_raw).collect();
