@@ -7,7 +7,7 @@ use serde::Deserialize;
 use serenity::{
     builder::CreateEmbed,
     client::Context,
-    framework::standard::{macros::command, Args, CommandResult},
+    framework::standard::{macros::command, Args, CommandError, CommandResult},
     futures::future::join_all,
     model::{
         channel::{Embed, Message},
@@ -21,6 +21,7 @@ lazy_static! {
 }
 
 #[command]
+#[aliases("sl")]
 #[sub_commands(add_server, sort_servers)]
 #[description = "Provides various sub-commands to moderate a list of servers.\nRefer to the sub-commands for more info."]
 pub async fn serverlist() -> CommandResult {
@@ -31,14 +32,14 @@ pub async fn serverlist() -> CommandResult {
 #[description("Creates a serverlist embed for the given server in the current channel")]
 #[usage("<discord invite link>")]
 #[example("https://discord.gg/gochiusa")]
+#[min_args(1)]
 async fn add_server(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let _ = msg.delete(&ctx).await;
 
     let invite_id = INVITE_ID_REGEX
         .captures(args.rest())
-        .expect("Please supply a valid discord invite link")
-        .get(1)
-        .expect("Please supply a valid discord invite link")
+        .and_then(|c| c.get(1))
+        .ok_or_else(|| CommandError::from("Please supply a valid discord invite link"))?
         .as_str();
 
     let invite_info: InviteInfo = get_invite_info(invite_id).await?;
@@ -75,7 +76,7 @@ async fn sort_servers(ctx: &Context, msg: &Message, _: Args) -> CommandResult {
 
     embeds.sort_by_cached_key(|e| e.title.clone().unwrap_or_default());
 
-    let futures = messages.iter_mut().enumerate().map(|(i, m)| {
+    let futures = messages.iter_mut().map(|m| {
         let embed = embeds.pop().unwrap();
         m.edit(&ctx, |m| m.set_embed(CreateEmbed::from(embed)))
     });

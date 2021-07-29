@@ -8,6 +8,15 @@ use serenity::{
 use reqwest::{get, StatusCode};
 
 #[command]
+#[description(
+    "Fetches an article for the given unix/windows command to show its usage. \
+    If you're searching for Windows or MacOS commands, you must specify it as the first argument."
+)]
+#[usage("<command to look up>")]
+#[usage("<linux|windows|macos> <command to look up>")]
+#[example("ls")]
+#[example("windows dir")]
+#[min_args(1)]
 pub async fn tldr(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let platform_arg;
 
@@ -53,7 +62,11 @@ pub async fn tldr(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
 
                 let (title, description) = match get_tldr_content_from_markdown(resp_body) {
                     Some(tuple) => tuple,
-                    None => return Err(CommandError::from("Couldn't parse tldr markdown")),
+                    None => {
+                        return Err(CommandError::from(
+                            "There was an error while parsing the markdown",
+                        ))
+                    }
                 };
 
                 let _ = msg

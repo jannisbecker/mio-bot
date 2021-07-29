@@ -1,4 +1,5 @@
 use crate::core::constants::MAIN_COLOR;
+use crate::core::util::send_error_msg;
 use chrono::{DateTime, Utc};
 use serenity::futures::StreamExt;
 use serenity::model::guild::Member;
@@ -54,12 +55,13 @@ pub async fn boosts(ctx: &Context, msg: &Message, _args: Args) -> CommandResult 
             })
             .await;
     } else {
-        let _ = msg
-            .channel_id
-            .send_message(&ctx.http, |m| {
-                m.content("Couldn't find any members boosting this server!")
-            })
-            .await;
+        send_error_msg(
+            ctx,
+            msg,
+            None,
+            "Couldn't find any members boosting this server".into(),
+        )
+        .await;
     }
 
     Ok(())

@@ -181,17 +181,19 @@ lazy_static! {
 }
 
 #[command]
-#[description("Converts a number with a given unit to another unit.")]
+#[description(
+    "Converts a value with a given unit to another unit.\n\
+    Source and destination units must be one of the following and both must belong to the same group: \n\
+    - Velocity units: kmh or km/h, ms or m/s, mph or mi/h, fts or ft/s \n\
+    - Distance units: km, m, cm, mm, mi, ft, yd, in or inch or inches \n\
+    - Temp units: C or °C, F or °F, K
+")]
+#[usage("<numeric value><source unit> <destination unit>")]
 #[example("25km/h mph")]
 #[example("5mi mm")]
 #[example("27°C °F")]
+#[min_args(2)]
 pub async fn convert(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    if args.len() != 2 {
-        return 
-           Err(CommandError::from("Invalid number of arguments. You need to pass <number><unit> and <desired unit>, e.g. convert 25km/s ft/s"))
-        
-    }
-
     let source_arg = args.single::<String>().unwrap();
     let dest_unit_arg = args.single::<String>().unwrap();
 
@@ -243,7 +245,7 @@ fn get_unit(unit_string: &str) -> Option<Unit> {
     match unit_string.to_lowercase().as_str() {
         "kmh" | "km/h" => Some(Unit::Velocity(VelocityType::KILOMETERSPERHOUR)),
         "ms" | "m/s" => Some(Unit::Velocity(VelocityType::METERSPERSECOND)),
-        "mph" | "m/h" => Some(Unit::Velocity(VelocityType::MILESPERHOUR)),
+        "mph" | "mi/h" => Some(Unit::Velocity(VelocityType::MILESPERHOUR)),
         "fts" | "ft/s" => Some(Unit::Velocity(VelocityType::FEETPERSECOND)),
 
         "km" => Some(Unit::Distance(DistanceType::KILOMETER)),

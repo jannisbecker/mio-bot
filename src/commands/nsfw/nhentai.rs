@@ -5,7 +5,8 @@ use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
 use serenity::{
     client::Context,
-    framework::standard::{macros::command, Args, CommandResult},
+    framework::standard::{macros::command, Args, CommandError, CommandResult},
+    futures::TryFutureExt,
     model::channel::Message,
 };
 
@@ -20,10 +21,19 @@ lazy_static! {
 #[description(
     "Looks up one or multiple nhentai IDs and returns information about the associated doujinshi."
 )]
+#[usage("<nhentai ID>")]
+#[example("177013")]
+#[min_args(1)]
 pub async fn nhentai(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let ids_raw = args.message();
     let id_captures: Vec<Captures> = ID_REGEX.captures_iter(ids_raw).collect();
     let client = reqwest::Client::new();
+
+    if id_captures.is_empty() {
+        return Err(CommandError::from(
+            "Please supply a valid nhentai ID as an argument",
+        ));
+    }
 
     for id_capture in id_captures {
         let id = id_capture.get(1).unwrap().as_str();
@@ -31,9 +41,11 @@ pub async fn nhentai(ctx: &Context, msg: &Message, args: Args) -> CommandResult 
         let data: GalleryResponse = client
             .get(format!("https://nhentai.net/api/gallery/{}", id).as_str())
             .send()
-            .await?
-            .json()
-            .await?;
+            .and_then(|res| res.json())
+            .await
+            .map_err(|_| {
+                CommandError::from("There was an error parsing the nhentai api response")
+            })?;
 
         let _ = msg
             .channel_id
@@ -56,8 +68,6 @@ pub async fn nhentai(ctx: &Context, msg: &Message, args: Args) -> CommandResult 
                             ),
                         ])
                 });
-
-                println!("{:?}", msg);
 
                 msg
             })

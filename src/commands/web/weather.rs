@@ -2,6 +2,7 @@ use chrono::{DateTime, FixedOffset, NaiveDateTime, Utc};
 use serde::Deserialize;
 use serenity::{
     framework::standard::{macros::command, Args, CommandError, CommandResult},
+    futures::TryFutureExt,
     model::channel::Message,
     prelude::Context,
 };
@@ -9,19 +10,19 @@ use std::env;
 
 use crate::core::constants::MAIN_COLOR;
 
-// static MAP_ZOOM: i32 = 5;
-
 #[command]
 #[description("Retrieves the weather forecast at the given location")]
+#[usage("<city name>")]
 #[example("Berlin")]
 #[example("Sri Lanka")]
 #[example("New York")]
-pub async fn weather(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+#[min_args(1)]
+pub async fn weather(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let token = match env::var("OPEN_WEATHER_MAP_TOKEN") {
         Ok(token) => token,
         Err(_) => {
             return Err(CommandError::from(
-                "Couldn't load api key from config".to_string(),
+                "The bot owner didn't provide the OpenWeatherMap api key".to_string(),
             ))
         }
     };
@@ -29,15 +30,21 @@ pub async fn weather(ctx: &Context, msg: &Message, mut args: Args) -> CommandRes
     let client = reqwest::Client::new();
 
     // Get coordinates for given location
-    let search_arg = args.single::<String>()?;
+    let search_arg = args.rest();
+
+    if search_arg.is_empty() {
+        return Err(CommandError::from(
+            "Please supply a valid city name as argument",
+        ));
+    }
 
     let location: LocationQueryResponse = client
         .get("http://api.openweathermap.org/data/2.5/weather")
-        .query(&[("appid", &token), ("q", &search_arg)])
+        .query(&[("appid", &token), ("q", &search_arg.to_string())])
         .send()
-        .await?
-        .json()
-        .await?;
+        .and_then(|res| res.json())
+        .await
+        .map_err(|_| CommandError::from("There was an error parsing the weather api response"))?;
 
     let weather: WeatherQueryResponse = client
         .get("http://api.openweathermap.org/data/2.5/onecall")
@@ -150,33 +157,12 @@ pub async fn weather(ctx: &Context, msg: &Message, mut args: Args) -> CommandRes
         })
         .await;
 
-    // let _ = msg.channel_id.send_message(&ctx.http, |m| {
-    //     m.embed(|e| {
-    //         e.image(get_weather_map_url(
-    //             "clouds_new",
-    //             get_map_coords_from_lat_lon(location.coord.lat, location.coord.lon),
-    //             &token,
-    //         ))
-    //     })
-    // });
-
     Ok(())
 }
 
 fn get_weather_image_url(code: &String) -> String {
     format!("http://openweathermap.org/img/wn/{}@2x.png", code)
 }
-
-// fn get_weather_map_url(layer: &str, coords: (i32, i32), app_id: &str) -> String {
-//     format!(
-//         "https://tile.openweathermap.org/map/{layer}/{z}/{x}/{y}.png?appid={api_key}",
-//         layer = layer,
-//         z = MAP_ZOOM,
-//         x = coords.0,
-//         y = coords.1,
-//         api_key = app_id
-//     )
-// }
 
 fn get_weather_emoji(code: &String) -> String {
     match code.as_str() {
@@ -194,16 +180,6 @@ fn get_weather_emoji(code: &String) -> String {
     }
     .to_string()
 }
-
-// fn get_map_coords_from_lat_lon(lat: f64, lon: f64) -> (i32, i32) {
-//     let lat_rad = lat.to_radians();
-
-//     let n = 2.0_f64.powi(MAP_ZOOM);
-//     let x = n * ((lon + 180.0) / 360.0);
-//     let y = n * (1.0 - ((lat_rad.tan() + (1.0 / lat_rad.cos())).log10() / PI)) / 2.0;
-
-//     (x as i32, y as i32)
-// }
 
 fn uppercase_first(s: &str) -> String {
     format!("{}{}", (&s[..1].to_string()).to_uppercase(), &s[1..])

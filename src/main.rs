@@ -1,13 +1,13 @@
 mod commands;
 mod core;
 
-use crate::core::constants::ERROR_COLOR;
 use crate::core::context::*;
+use crate::core::util::send_error_msg;
 use chrono::Utc;
-use log::info;
+use log::{error, info};
 use serenity::{
     async_trait,
-    framework::standard::{macros::hook, CommandResult, StandardFramework},
+    framework::standard::{macros::hook, CommandResult, DispatchError, Reason, StandardFramework},
     http::Http,
     model::{channel::Message, event::ResumedEvent, gateway::Ready},
     prelude::*,
@@ -40,7 +40,10 @@ impl EventHandler for Handler {
 #[tokio::main]
 async fn main() {
     kankyo::load(false).expect("Failed to load .env file");
-    env_logger::init();
+    env_logger::builder()
+        .filter_module("serenity", log::LevelFilter::Error)
+        .filter_module("tracing", log::LevelFilter::Error)
+        .init();
 
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
     let http = Http::new_with_token(&token);
@@ -68,6 +71,7 @@ async fn main() {
                 .prefixes(vec!["~", "aoyama "])
                 .owners(owners)
         })
+        .on_dispatch_error(dispatch_error)
         .after(after)
         .group(&commands::web::WEB_GROUP)
         .group(&commands::fun::FUN_GROUP)
@@ -92,29 +96,59 @@ async fn main() {
     }
 
     if let Err(why) = client.start().await {
-        println!("Client error: {:?}", why);
+        error!("Client error: {:?}", why);
+    }
+}
+
+#[hook]
+async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError) {
+    match error {
+        DispatchError::CheckFailed(check_name, reason) => {
+            info!(
+                "Command check '{}' failed. Reason: {:?}",
+                check_name, reason
+            );
+
+            if let Reason::User(error_msg) = reason {
+                send_error_msg(ctx, msg, None, &error_msg).await;
+            };
+        }
+        DispatchError::NotEnoughArguments { min, given } => {
+            info!(
+                "Command didn't receive enough arguments. Message: '{}', Given: {} Expected: {}",
+                msg.content, given, min
+            );
+
+            send_error_msg(
+                ctx,
+                msg,
+                None,
+                format!(
+                    "Command needs at least {} arguments. See ~help <command> for guidance.",
+                    min
+                )
+                .as_str(),
+            )
+            .await;
+        }
+        _ => (),
     }
 }
 
 #[hook]
 async fn after(ctx: &Context, msg: &Message, command_name: &str, command_result: CommandResult) {
     match command_result {
-        Ok(()) => println!(
+        Ok(()) => info!(
             "Command '{}' processed message: {}",
             command_name, msg.content
         ),
         Err(error) => {
-            println!(
+            info!(
                 "Command '{}' returned error. Message: {}, Error: {:?}",
                 command_name, msg.content, error
             );
 
-            let _ = msg
-                .channel_id
-                .send_message(&ctx.http, |m| {
-                    m.embed(|e| e.colour(ERROR_COLOR).title("Oh noes!").description(error))
-                })
-                .await;
+            send_error_msg(ctx, msg, None, &error.to_string()).await;
         }
     }
 }

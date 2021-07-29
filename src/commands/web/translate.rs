@@ -13,11 +13,15 @@ use crate::core::constants::MAIN_COLOR;
         You can optionally prefix the source language as first argument, \
         otherwise it will be auto detected."
 )]
+#[usage("<target lang> <text>")]
+#[usage("<source lang> <target lang> <text>")]
 #[example("en こんにちは！")]
 #[example("de en Guten Abend!")]
+#[min_args(2)]
 pub async fn translate(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let first_arg = args.single::<String>()?;
-    let second_arg = args.single::<String>()?;
+    // checked by min_args macro
+    let first_arg = args.single::<String>().unwrap();
+    let second_arg = args.single::<String>().unwrap();
 
     // Get the target lang (or source lang if second language is given)
     let mut target_lang = match validate_lang_arg(&first_arg) {
@@ -49,9 +53,7 @@ pub async fn translate(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 
     // If nothing is left to translate, a text is missing
     if args.is_empty() {
-        return Err(CommandError::from(
-            "There needs to be a text to be translated!".to_string(),
-        ));
+        return Err(CommandError::from("Please supply a text to be translated"));
     }
 
     let text = args.rest();
