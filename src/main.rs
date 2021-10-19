@@ -26,7 +26,7 @@ impl EventHandler for Handler {
         use serenity::model::user::OnlineStatus;
 
         ctx.set_presence(
-            Some(Activity::listening("~help, aoyama help")),
+            Some(Activity::listening("~help, mio help")),
             OnlineStatus::Online,
         )
         .await
@@ -68,7 +68,7 @@ async fn main() {
     let framework = StandardFramework::new()
         .configure(|c| {
             c.on_mention(Some(bot_user.id))
-                .prefixes(vec!["~", "aoyama "])
+                .prefixes(vec!["~", "mio "])
                 .owners(owners)
         })
         .on_dispatch_error(dispatch_error)

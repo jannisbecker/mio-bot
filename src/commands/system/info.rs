@@ -57,11 +57,10 @@ pub async fn info(ctx: &Context, msg: &Message, _: Args) -> CommandResult {
     let _ = msg.channel_id.send_message(&ctx.http, |m| {
         m.embed(|e| {
             e.colour(MAIN_COLOR)
-                .title("About me, Aoyama-san")
+                .title("About me, Mio-san")
                 .description(
-                    "**Konnichiha!**\n\
-                    I'm Aoyama \"Blue Mountain\", a fellow writer in town!\n\
-                    Moka-san wrote me in [Rust](https://www.rust-lang.org/) using [serenity](https://github.com/serenity-rs/serenity).",
+                    "**こんばんみぉーん**！\n\
+                    I'm Ookami Mio, your fellow helper bot written in [Rust](https://www.rust-lang.org/) using [serenity](https://github.com/serenity-rs/serenity).",
                 )
                 .thumbnail(bot_avatar)
                 .fields(vec![

@@ -6,7 +6,7 @@ use serenity::{
 
 #[command]
 #[min_args(1)]
-#[description("Let Aoyama say what you want")]
+#[description("Let Mio say what you want")]
 #[example("@user is great!")]
 #[example("I like gween tea!")]
 pub async fn say(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
@@ -21,9 +21,8 @@ pub async fn say(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
 #[command]
 #[min_args(1)]
-#[description("Let Aoyama YELL IT ><")]
+#[description("Let Mio YELL IT ><")]
 #[example("@user is great!")]
-#[example("I like gween tea!")]
 pub async fn yell(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let _ = msg
         .channel_id
